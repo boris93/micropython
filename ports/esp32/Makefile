@@ -111,6 +111,11 @@ INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
 INC_ESPCOMP += -I$(ESPCOMP)/smartconfig_ack/include
+INC_ESPCOMP += -I$(ESPCOMP)/esp32-camera/driver/include
+INC_ESPCOMP += -I$(ESPCOMP)/esp32-camera/driver/private_include
+INC_ESPCOMP += -I$(ESPCOMP)/esp32-camera/conversions/include
+INC_ESPCOMP += -I$(ESPCOMP)/esp32-camera/conversions/private_include
+INC_ESPCOMP += -I$(ESPCOMP)/esp32-camera/sensors/private_include
 
 # these flags are common to C and C++ compilation
 CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
@@ -191,6 +196,7 @@ SRC_C = \
 	machine_wdt.c \
 	mpthreadport.c \
 	machine_rtc.c \
+	modcamera.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -657,6 +663,21 @@ ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	port/os_xtensa.o \
 	)
 
+ESP32_CAM_O = $(addprefix $(ESPCOMP)/esp32-camera/,\
+	driver/camera.o \
+	driver/sccb.o \
+	driver/sensor.o \
+	driver/twi.o \
+	driver/xclk.o \
+	sensors/ov2640.o \
+	sensors/ov7725.o \
+	conversions/yuv.o \
+	conversions/to_jpg.o \
+	conversions/to_bmp.o \
+	conversions/jpge.o \
+	conversions/esp_jpg_decode.o \
+	)
+
 OBJ_ESPIDF =
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NEWLIB_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_DRIVER_O))
@@ -685,6 +706,7 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SMARTCONFIG_ACK_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ULP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESP32_CAM_O))
 
 $(OBJ_ESPIDF): $(SDKCONFIG_H)
 
@@ -715,6 +737,7 @@ LIB_ESPIDF += ulp
 LIB_ESPIDF += lwip
 LIB_ESPIDF += mbedtls
 LIB_ESPIDF += wpa_supplicant
+LIB_ESPIDF += esp32_cam
 
 BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
 
@@ -755,6 +778,7 @@ $(eval $(call gen_espidf_lib_rule,ulp,$(ESPIDF_ULP_O)))
 $(eval $(call gen_espidf_lib_rule,lwip,$(ESPIDF_LWIP_O)))
 $(eval $(call gen_espidf_lib_rule,mbedtls,$(ESPIDF_MBEDTLS_O)))
 $(eval $(call gen_espidf_lib_rule,wpa_supplicant,$(ESPIDF_WPA_SUPPLICANT_O)))
+$(eval $(call gen_espidf_lib_rule,esp32_cam,$(ESP32_CAM_O)))
 
 LIB = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)/$(lib)/lib$(lib).a)
 
